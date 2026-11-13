@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Уютная пекарня: Слияние сладостей</title>
+<script src="https://unpkg.com"></script>
+<style>
+*{box-sizing:border-box;user-select:none;-webkit-user-select:none;margin:0;padding:0;font-family:sans-serif}
+body{background:linear-gradient(180deg,#ffecd2,#fcb69f);height:100vh;width:100vw;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:space-between;color:#5c3a21}
+#top{width:100%;max-width:480px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;background:rgba(255,250,240,.9);border-bottom:2px solid #e6c29f}
+.box{background:#fff;padding:4px 10px;border-radius:10px;border:1.5px solid #edd0b4;text-align:center;min-width:68px}
+.lbl{font-size:10px;color:#9e7356;font-weight:700;display:block}
+.val{font-size:15px;font-weight:800}
+.btns{display:flex;gap:6px}
+.ibtn{background:#fff;border:1.5px solid #edd0b4;border-radius:10px;width:36px;height:36px;font-size:17px}
+#lvl-wrap{width:100%;max-width:480px;padding:4px 12px;display:flex;align-items:center;gap:8px;background:rgba(255,245,232,.75)}
+#lvl-tag{background:#ff7b54;color:#fff;font-weight:800;font-size:12px;padding:2px 8px;border-radius:8px}
+#xp-bar{flex:1;height:8px;background:#ead1b9;border-radius:5px;overflow:hidden}
+#xp-fill{height:100%;width:0%;background:#ff6b6b;transition:width .3s}
+#next-box{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700}
+#wrap{position:relative;flex:1;width:100%;max-width:480px;padding:6px 10px;display:flex;justify-content:center;align-items:center}
+canvas#c{background:rgba(255,253,249,.94);border-radius:18px;border:3px solid #d4a373;width:100%;height:100%;display:block;touch-action:none}
+#hint{position:absolute;top:14px;background:#ff595e;color:#fff;padding:5px 12px;border-radius:16px;font-size:12px;font-weight:700;display:none}
+#bot{width:100%;max-width:480px;padding:6px 10px 12px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:rgba(255,250,240,.9);border-top:2px solid #e6c29f}
+.bbtn{background:#fff;border:2px solid #e0b187;border-radius:12px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;box-shadow:0 2px 0 #d4a373}
+.bbtn:active{transform:translateY(2px)}
+.bt{font-size:12px;font-weight:800;color:#5c3a21}
+.bs{font-size:10px;font-weight:700;color:#d96b27;background:#ffe5d0;padding:1px 5px;border-radius:6px;margin-top:2px}
+.mod{position:fixed;inset:0;background:rgba(45,25,12,.65);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.card{background:#fffaf3;border:3px solid #d4a373;border-radius:20px;width:100%;max-width:340px;padding:18px;text-align:center}
+.card h2{font-size:20px;margin-bottom:8px}
+.card p{font-size:13px;color:#7c5234;margin-bottom:14px;line-height:1.4}
+.abtn{width:100%;padding:11px;border:none;border-radius:12px;font-size:14px;font-weight:800;color:#fff;margin-bottom:8px}
+.ad{background:#ff595e}.ok{background:#40916c}.sec{background:#b08968}
+.row{display:flex;justify-content:space-between;padding:7px 10px;background:#fff;border-radius:8px;margin-bottom:5px;font-size:13px;font-weight:700;border:1px solid #edd0b4}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="box"><span class="lbl">Счёт</span><span class="val" id="sc">0</span></div>
+  <div class="box"><span class="lbl">Рекорд</span><span class="val" id="bs">0</span></div>
+  <div class="btns">
+    <button class="ibtn" id="b-day">🎁</button>
+    <button class="ibtn" id="b-top">🏆</button>
+    <button class="ibtn" id="b-snd">🔊</button>
+  </div>
+</div>
+<div id="lvl-wrap">
+  <div id="lvl-tag">Ур. 1</div>
+  <div id="xp-bar"><div id="xp-fill"></div></div>
+  <div id="next-box">Далее: <canvas id="nc" width="24" height="24"></canvas></div>
+</div>
+<div id="wrap">
+  <div id="hint">Нажмите на сладость!</div>
+  <canvas id="c"></canvas>
+</div>
+<div id="bot">
+  <button class="bbtn" id="bst-mix"><span class="bt">🌪️ Миксер</span><span class="bs">🎬 Реклама</span></button>
+  <button class="bbtn" id="bst-eat"><span class="bt">🍴 Съесть</span><span class="bs">🎬 Реклама</span></button>
+  <button class="bbtn" id="bst-upg"><span class="bt">✨ Улучшить</span><span class="bs">🎬 Реклама</span></button>
+</div>
+<div class="mod" id="m-over"><div class="card">
+  <h2>Витрина заполнена!</h2>
+  <p>Счёт: <b id="f-sc">0</b>. Уберите верхний ряд и играйте дальше!</p>
+  <button class="abtn ad" id="b-rev">🎬 Второй шанс (Реклама)</button>
+  <button class="abtn sec" id="b-rst">Начать заново</button>
+</div></div>
+<div class="mod" id="m-day"><div class="card">
+  <h2>🎁 Подарок пекаря</h2>
+  <p id="d-txt">Заходите каждый день за бонусом!</p>
+  <button class="abtn ok" id="b-clm">Забрать +250 очков</button>
+  <button class="abtn sec" onclick="hideM()">Закрыть</button>
+</div></div>
+<div class="mod" id="m-top"><div class="card">
+  <h2>🏆 Лучшие пекари</h2>
+  <div id="r-list"></div>
+  <button class="abtn sec" style="margin-top:8px" onclick="hideM()">Закрыть</button>
+</div></div>
+
+<script>
+// Инициализация VK Bridge
+let lastAd=0;
+if(typeof vkBridge!=='undefined'){
+  vkBridge.send('VKWebAppInit').catch(()=>{});
+  vkBridge.send('VKWebAppCheckNativeAds',{ad_format:'reward'}).catch(()=>{});
+  vkBridge.send('VKWebAppCheckNativeAds',{ad_format:'interstitial'}).catch(()=>{});
+}
+function showFull(){
+  if(Date.now()-lastAd<185000)return;
+  if(typeof vkBridge!=='undefined'){
+    vkBridge.send('VKWebAppShowNativeAds',{ad_format:'interstitial'})
+      .then(()=>{lastAd=Date.now()}).catch(()=>{});
+  }
+}
+function showRew(cb){
+  if(typeof vkBridge!=='undefined'){
+    vkBridge.send('VKWebAppShowNativeAds',{ad_format:'reward'})
+      .then(data=>{if(data.result)cb();else cb();})
+      .catch(()=>cb());
+  }else cb();
+}
+
+let snd=true,actx=null;
+function tone(f,t,d){if(!snd)return;if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.setValueAtTime(f,actx.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.25,actx.currentTime+d);g.gain.setValueAtTime(.14,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d)}
+
+const SW=[
+  {r:15,c:'#ff4d6d',a:'#ff8fa3',i:'#fff0f3',s:2},
+  {r:21,c:'#ff9f1c',a:'#ffbf69',i:'#ffffff',s:4},
+  {r:27,c:'#b5179e',a:'#f72585',i:'#ffd6ff',s:8},
+  {r:34,c:'#d4a373',a:'#faedcd',i:'#6f4e37',s:16},
+  {r:41,c:'#f4a261',a:'#e76f51',i:'#ff758f',s:32},
+  {r:49,c:'#e09f3e',a:'#fff3b0',i:'#9e2a2b',s:64},
+  {r:57,c:'#8d5524',a:'#c68642',i:'#3d1e0d',s:128},
+  {r:66,c:'#ff70a6',a:'#ff9770',i:'#fffcf2',s:256},
+  {r:76,c:'#ffd166',a:'#ffe8a3',i:'#ef476f',s:512},
+  {r:87,c:'#ff595e',a:'#ffca3a',i:'#ffffff',s:1024}
+];
+
+const cv=document.getElementById('c'),cx=cv.getContext('2d'),ncv=document.getElementById('nc'),ncx=ncv.getContext('2d');
+let W=360,H=520,balls=[],parts=[],score=0,best=+localStorage.getItem('bk_vk_best')||0,lvl=1,xp=0,curT=0,nxtT=1,dropX=180,canDrop=true,over=false,mode=null,dTimer=0;
+function resize(){const r=cv.parentElement.getBoundingClientRect();cv.width=r.width-20;cv.height=r.height-12;W=cv.width;H=cv.height;dropX=Math.max(40,Math.min(W-40,dropX))}
+window.addEventListener('resize',resize);resize();
+
+function drawSw(g,x,y,t,cr){
+  const s=SW[t],r=cr||s.r;g.save();g.translate(x,y);
+  g.beginPath();g.arc(2,4,r,0,6.29);g.fillStyle='rgba(92,58,33,.18)';g.fill();
+  const gr=g.createRadialGradient(-r*.3,-r*.3,r*.1,0,0,r);gr.addColorStop(0,s.a);gr.addColorStop(.7,s.c);gr.addColorStop(1,'#5c3a21');
+  g.beginPath();g.arc(0,0,r,0,6.29);g.fillStyle=gr;g.fill();
+  g.beginPath();g.arc(0,0,r*.88,3.3,6.12);g.lineTo(r*.5,-r*.15);g.quadraticCurveTo(0,r*.15,-r*.5,-r*.15);g.closePath();g.fillStyle=s.i;g.fill();
+  if(t===4){g.beginPath();g.arc(0,0,r*.28,0,6.29);g.fillStyle='#fffdf9';g.fill()}
+  if(t>=2){const cl=['#ffbe0b','#fb5607','#ff006e','#3a86ff','#06d6a0'];for(let k=0;k<6;k++){const a=k*1.05;g.fillStyle=cl[k%5];g.fillRect(Math.cos(a)*r*.42-2.5,Math.sin(a)*r*.32-r*.15,5,2.5)}}
+  g.beginPath();g.ellipse(-r*.35,-r*.42,r*.24,r*.11,-.78,0,6.29);g.fillStyle='rgba(255,255,255,.65)';g.fill();
+  if(r>=21){g.fillStyle='#3d1e0d';g.beginPath();g.arc(-r*.22,r*.12,Math.max(2,r*.07),0,6.29);g.arc(r*.22,r*.12,Math.max(2,r*.07),0,6.29);g.fill();g.beginPath();g.arc(0,r*.15,r*.12,.3,2.8);g.strokeStyle='#3d1e0d';g.lineWidth=Math.max(1.5,r*.04);g.stroke()}
+  g.restore();
+}
+function drawNxt(){ncx.clearRect(0,0,24,24);drawSw(ncx,12,12,nxtT,9)}
+function boom(x,y,c){for(let k=0;k<12;k++){const a=Math.random()*6.29,sp=2+Math.random()*3.5;parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:3+Math.random()*3,c,l:1})}}
+function addPts(p){score+=p;xp+=p;if(xp>=lvl*150){xp-=lvl*150;lvl++;tone(520,'triangle',.25)}if(score>best){best=score;localStorage.setItem('bk_vk_best',best)}document.getElementById('sc').textContent=score;document.getElementById('bs').textContent=best;document.getElementById('lvl-tag').textContent='Ур. '+lvl;document.getElementById('xp-fill').style.width=Math.min(100,xp/(lvl*150)*100)+'%'}
+
+function step(){
+  if(over)return;
+  for(let st=0;st<4;st++){
+    for(let b of balls){
+      b.vy+=.105;b.x+=b.vx*.25;b.y+=b.vy*.25;
+      if(b.x-b.r<0){b.x=b.r;b.vx*=-.7}
+      if(b.x+b.r>W){b.x=W-b.r;b.vx*=-.7}
+      if(b.y+b.r>H){b.y=H-b.r;b.vy*=-.35;b.vx*=.92}
+    }
+    for(let i=0;i<balls.length;i++){
+      for(let j=i+1;j<balls.length;j++){
+        const a=balls[i],b=balls[j];if(!a||!b)continue;
+        const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),md=a.r+b.r;
+        if(d<md){
+          if(a.t===b.t&&a.t<SW.length-1&&!a.m&&!b.m){
+            a.m=b.m=true;const nx=(a.x+b.x)/2,ny=(a.y+b.y)/2,nt=a.t+1;
+            balls.splice(j,1);balls.splice(i,1);
+            balls.push({x:nx,y:ny,vx:0,vy:-2,t:nt,r:SW[nt].r,m:false,ts:Date.now()});
+            boom(nx,ny,SW[nt].c);addPts(SW[nt].s);tone(300+nt*55,'sine',.18);break;
+          }
+          const ov=(md-d)*.5,nx=dx/(d||1),ny=dy/(d||1);
+          a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
+          const vn=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
+          if(vn<0){const im=-.65*vn;a.vx-=im*nx;a.vy-=im*ny;b.vx+=im*nx;b.vy+=im*ny}
+        }
+      }
+    }
+  }
+  let ovf=false;
+  for(let b of balls)if(Date.now()-b.ts>1200&&b.y-b.r<90){ovf=true;break}
+  if(ovf){dTimer++;if(dTimer>90){over=true;saveRec(score);document.getElementById('f-sc').textContent=score;document.getElementById('m-over').style.display='flex';tone(140,'sawtooth',.4)}}else dTimer=0;
+}
+
+function loop(){
+  cx.clearRect(0,0,W,H);
+  cx.save();cx.beginPath();cx.setLineDash([6,6]);cx.moveTo(0,90);cx.lineTo(W,90);cx.strokeStyle=dTimer>0?'#ff3b30':'rgba(212,163,115,.6)';cx.lineWidth=2;cx.stroke();cx.restore();
+  if(canDrop&&!over&&!mode){
+    cx.save();cx.beginPath();cx.setLineDash([4,4]);cx.moveTo(dropX,42);cx.lineTo(dropX,H);cx.strokeStyle='rgba(158,115,86,.3)';cx.stroke();cx.restore();
+    drawSw(cx,dropX,40,curT);
+  }
+  for(let b of balls)drawSw(cx,b.x,b.y,b.t);
+  for(let i=parts.length-1;i>=0;i--){
+    const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.l-=.04;
+    if(p.l<=0){parts.splice(i,1);continue}
+    cx.globalAlpha=p.l;cx.fillStyle=p.c;cx.beginPath();cx.arc(p.x,p.y,p.r,0,6.29);cx.fill();cx.globalAlpha=1;
+  }
+  step();requestAnimationFrame(loop);
+}
+
+function ptr(clientX,clientY,rel){
+  if(over)return;
+  const rc=cv.getBoundingClientRect(),x=clientX-rc.left,y=clientY-rc.top;
+  if(mode&&rel){
+    for(let i=balls.length-1;i>=0;i--){
+      const b=balls[i];
+      if(Math.hypot(b.x-x,b.y-y)<=b.r+12){
+        if(mode==='eat'){boom(b.x,b.y,SW[b.t].c);balls.splice(i,1);tone(220,'sawtooth',.15)}
+        else if(mode==='upg'&&b.t<SW.length-1){b.t++;b.r=SW[b.t].r;boom(b.x,b.y,SW[b.t].c);addPts(SW[b.t].s);tone(480,'sine',.2)}
+        setMode(null);return;
+      }
+    }
+    return;
+  }
+  const r=SW[curT].r;dropX=Math.max(r+4,Math.min(W-r-4,x));
+  if(rel&&canDrop&&!mode){
+    canDrop=false;
+    balls.push({x:dropX,y:42,vx:0,vy:2,t:curT,r:r,m:false,ts:Date.now()});
+    tone(190,'sine',.1);
+    setTimeout(()=>{curT=nxtT;nxtT=Math.floor(Math.random()*4);drawNxt();canDrop=true},420);
+  }
+}
+
+cv.addEventListener('touchstart',e=>{e.preventDefault();ptr(e.touches[0].clientX,e.touches[0].clientY,false)},{passive:false});
+cv.addEventListener('touchmove',e=>{e.preventDefault();ptr(e.touches[0].clientX,e.touches[0].clientY,false)},{passive:false});
+cv.addEventListener('touchend',e=>{const t=e.changedTouches[0];ptr(t.clientX,t.clientY,true)});
+cv.addEventListener('mousemove',e=>ptr(e.clientX,e.clientY,false));
+cv.addEventListener('mouseup',e=>ptr(e.clientX,e.clientY,true));
+
+function setMode(m){mode=m;const h=document.getElementById('hint');if(m==='eat'){h.textContent='🍴 Нажмите на сладость, чтобы съесть';h.style.display='block'}else if(m==='upg'){h.textContent='✨ Нажмите на сладость, чтобы улучшить';h.style.display='block'}else h.style.display='none'}
+document.getElementById('bst-mix').onclick=()=>showRew(()=>{balls.forEach(b=>{b.vy=-8-Math.random()*6;b.vx=(Math.random()-.5)*14});tone(320,'triangle',.3)});
+document.getElementById('bst-eat').onclick=()=>{if(balls.length)showRew(()=>setMode('eat'))};
+document.getElementById('bst-upg').onclick=()=>{if(balls.length)showRew(()=>setMode('upg'))};
+document.getElementById('b-rev').onclick=()=>showRew(()=>{balls=balls.filter(b=>b.y>H*.48);dTimer=0;over=false;hideM();tone(550,'sine',.3)});
+document.getElementById('b-rst').onclick=()=>{showFull();balls=[];score=0;lvl=1;xp=0;dTimer=0;over=false;addPts(0);hideM()};
+function hideM(){document.querySelectorAll('.mod').forEach(m=>m.style.display='none')}
+
+document.getElementById('b-day').onclick=()=>{
+  const td=new Date().toDateString(),cl=localStorage.getItem('bk_vk_day')===td,btn=document.getElementById('b-clm');
+  document.getElementById('d-txt').textContent=cl?'Подарок на сегодня уже получен! Возвращайтесь завтра.':'Ежедневный подарок пекаря готов! Заберите +250 очков.';
+  btn.style.display=cl?'none':'block';document.getElementById('m-day').style.display='flex';
+};
+document.getElementById('b-clm').onclick=()=>{localStorage.setItem('bk_vk_day',new Date().toDateString());addPts(250);tone(600,'sine',.25);hideM()};
+
+function saveRec(s){if(s<=0)return;let l=JSON.parse(localStorage.getItem('bk_vk_top')||'[]');l.push({s,d:new Date().toLocaleDateString('ru-RU')});l.sort((a,b)=>b.s-a.s);localStorage.setItem('bk_vk_top',JSON.stringify(l.slice(0,5)))}
+document.getElementById('b-top').onclick=()=>{
+  const l=JSON.parse(localStorage.getItem('bk_vk_top')||'[]'),box=document.getElementById('r-list');
+  box.innerHTML=l.length?l.map((x,i)=>`<div class="row"><span>#${i+1} (${x.d})</span><span>${x.s} очк.</span></div>`).join(''):'<p>Рекордов пока нет!</p>';
+  document.getElementById('m-top').style.display='flex';
+};
+document.getElementById('b-snd').onclick=e=>{snd=!snd;e.target.textContent=snd?'🔊':'🔇'};
+
+document.getElementById('bs').textContent=best;drawNxt();loop();
+</script>
+</body>
+</html>
